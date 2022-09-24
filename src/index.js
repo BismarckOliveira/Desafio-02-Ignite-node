@@ -10,19 +10,65 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+
+  const user = users.find(user => user.username === username)
+
+  if (!user) {
+    return response.status(404).json({ message: "User does not exists" })
+  }
+
+  request.user = user
+  next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+
+  if (user.todos.length >= 10 && user.pro === false) {
+    return response.status(403).json({ message: "User expire limit for plan" })
+  }
+  next()
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+  const { id } = request.params
+
+  const existUser = users.find(user => user.username === username)
+
+  if (!existUser) {
+    return response.status(404).json({ message: "User does not exists" })
+  }
+
+  if (!validate(id)) {
+    return response.status(400).json({ error: "ID is not UUID!" })
+  }
+
+  const userTodo = existUser.todos.find(t => t.id === id)
+
+  if (!userTodo) {
+    return response.status(404).json({ error: "ID invalid!" })
+  }
+  request.todo = userTodo
+  request.user = existUser
+
+  next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id)
+
+  if (!user) {
+    return response.status(404).json({ message: 'User does not exist' })
+  }
+
+  request.user = user;
+
+  next()
+
 }
 
 app.post('/users', (request, response) => {
